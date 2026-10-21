@@ -1,0 +1,17 @@
+{
+  "$schema": "https://schema.tauri.app/config/2",
+  "productName": "XD to Figma",
+  "version": "0.1.0",
+  "identifier": "com.example.xdtofigma",
+  "build": {
+    "beforeDevCommand": "npm run dev",
+    "devUrl": "http://127.0.0.1:1420",
+    "beforeBuildCommand": "npm run build",
+    "frontendDist": "../dist"
+  },
+  "app": {
+    "windows": [{ "title": "XD → Figma", "width": 560, "height": 580, "resizable": false, "minWidth": 560, "minHeight": 580 }],
+    "security": { "csp": null }
+  },
+  "bundle": { "active": true, "targets": "all", "category": "Productivity", "shortDescription": "Convert Adobe XD documents to Figma" }
+}
