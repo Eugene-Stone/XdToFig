@@ -188,7 +188,7 @@ fn build_element(
     }
     let ty = match kind.as_str() {
         "text" => "text",
-        "group" => "group",
+        "group" | "syncref" => "group",
         "rectangle" | "rect" => "rectangle",
         "ellipse" | "oval" => "ellipse",
         "line" => "line",
@@ -234,16 +234,17 @@ fn build_element(
         node.insert("corners".into(), corners.clone());
     }
     if ty == "vector" {
-        if let Some(path) = element
+        let network = if let Some(path) = element
             .path_data
             .as_deref()
             .or_else(|| element.raw.get("path").and_then(Value::as_str))
         {
-            node.insert(
-                "network".into(),
-                svg_path_to_network(path, element.width, element.height),
-            );
-        }
+            svg_path_to_network(path, element.width, element.height)
+        } else {
+            // FigCraft requires a VectorNetwork even for unsupported/empty XD paths.
+            json!({"vertices":[],"segments":[],"regions":[]})
+        };
+        node.insert("network".into(), network);
     }
     if let Some(stroke) = stroke_from(&element.raw) {
         node.insert("stroke".into(), stroke);

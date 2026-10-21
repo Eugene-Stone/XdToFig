@@ -265,10 +265,15 @@ mod tests {
         if !input.exists() {
             return;
         }
-        let output = std::env::temp_dir().join(format!(
-            "xd-to-figcraft-website-{}.figcraft",
-            std::process::id()
-        ));
+        let keep_export = std::env::var_os("KEEP_XD_TEST_EXPORTS").is_some();
+        let output = if keep_export {
+            root.join("temp/website.figcraft")
+        } else {
+            std::env::temp_dir().join(format!(
+                "xd-to-figcraft-website-{}.figcraft",
+                std::process::id()
+            ))
+        };
         convert(input, output.clone()).unwrap();
         let mut archive = ZipArchive::new(std::fs::File::open(&output).unwrap()).unwrap();
         let value: serde_json::Value = {
@@ -289,6 +294,8 @@ mod tests {
             .values()
             .filter(|node| node["type"] == "group")
             .any(|node| node["name"] == "Component"));
-        std::fs::remove_file(output).unwrap();
+        if !keep_export {
+            std::fs::remove_file(output).unwrap();
+        }
     }
 }

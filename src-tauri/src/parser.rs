@@ -321,19 +321,10 @@ fn collect_elements(value: &Value, out: &mut Vec<XdElement>) {
             if is_artboard(value) {
                 return;
             }
-            // XD represents components/linked artwork as syncRef wrappers.
-            // Their actual content lives under group.children; treating the
-            // wrapper itself as a vector creates an invalid node without a
-            // VectorNetwork. Preserve the wrapper as a group and recurse.
+            // XD represents linked/component instances as syncRef wrappers.
+            // Do not expand referenced children here: repeated links can grow
+            // exponentially. Preserve the placeholder as an empty group.
             if value.get("type").and_then(Value::as_str) == Some("syncRef") {
-                let Some(children) = value.pointer("/group/children").and_then(Value::as_array)
-                else {
-                    return;
-                };
-                let mut normalized_children = Vec::new();
-                for child in children {
-                    collect_elements(child, &mut normalized_children);
-                }
                 let b = bounds(value);
                 out.push(XdElement {
                     id: string_field(value, &["guid", "id", "_id"]),
@@ -345,7 +336,7 @@ fn collect_elements(value: &Value, out: &mut Vec<XdElement>) {
                     height: b.3,
                     text: None,
                     path_data: None,
-                    raw: serde_json::json!({"type":"group", "transform":value.get("transform"), "normalized_children":normalized_children}),
+                    raw: serde_json::json!({"type":"group", "transform":value.get("transform"), "normalized_children":[]}),
                 });
                 return;
             }
